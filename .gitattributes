@@ -1,0 +1,2 @@
+# Generated SDK includes intentional whitespace inside JavaScript string literals.
+src/vendor/supabase.js -diff -whitespace

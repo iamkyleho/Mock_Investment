@@ -1,11 +1,10 @@
 import { TradingEngine, estimateFee, maxAffordableAmount, INITIAL_CASH, MIN_MARGIN } from './engine.js';
 import { STOCKS, STOCK_BY_ID } from './stocks.js';
 import { MarketChart } from './chart.js';
+import { accountSession, bindAccountGame } from './auth.js';
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];
-const SAVE_KEY = 'mock-exchange-game-v1';
-const PREF_KEY = 'mock-exchange-preferences-v1';
 const money = value => `₩${Math.round(value).toLocaleString('ko-KR')}`;
 const signedMoney = value => `${value > 0 ? '+' : value < 0 ? '−' : ''}₩${Math.round(Math.abs(value)).toLocaleString('ko-KR')}`;
 const percent = value => `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`;
@@ -16,12 +15,8 @@ const icon = name => `<svg><use href="#i-${name}"/></svg>`;
 const timeFormat = new Intl.DateTimeFormat('ko-KR', { timeZone:'Asia/Seoul', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false });
 const defaults = {selected:'nvidia',interval:1,chartType:'candles',showMA:true,showVolume:true,sound:false,volatility:1,favorites:['nvidia','samsung','apple','tesla','skhynix']};
 
-let preferences = {...defaults};
-let saved;
-let storageAvailable = true;
-try {
-  saved = localStorage.getItem(SAVE_KEY);
-  const stored = JSON.parse(localStorage.getItem(PREF_KEY) || 'null');
+function readPreferences(stored) {
+  let preferences = {...defaults, favorites: [...defaults.favorites]};
   if (stored && typeof stored === 'object') {
     preferences = {...defaults, ...stored};
     if (!STOCK_BY_ID[preferences.selected]) preferences.selected = defaults.selected;
@@ -31,9 +26,13 @@ try {
     preferences.favorites = Array.isArray(preferences.favorites) ? preferences.favorites.filter(id => STOCK_BY_ID[id]) : defaults.favorites;
     for (const key of ['showMA','showVolume','sound']) preferences[key] = typeof preferences[key] === 'boolean' ? preferences[key] : defaults[key];
   }
-} catch { storageAvailable = false; }
+  return preferences;
+}
+let preferences = readPreferences(accountSession.payload?.preferences);
+const saved = accountSession.payload?.game;
 
 let engine = new TradingEngine({saved});
+if (engine.restoreWarning) throw new Error('The account save is invalid; automatic reset is blocked.');
 engine.volatilityMultiplier = preferences.volatility;
 let selected = preferences.selected;
 let direction = 'high';
@@ -51,16 +50,8 @@ const chart = new MarketChart($('#market-chart'));
 const preferredOrder = ['nvidia','samsung','skhynix','apple','tesla','microsoft','naver','hyundai','amazon','meta','amd','tsmc','palantir'];
 const stockOrder = [...preferredOrder.map(id => STOCK_BY_ID[id]).filter(Boolean),...STOCKS.filter(stock => !preferredOrder.includes(stock.id))];
 
-function save() {
-  try {
-    localStorage.setItem(SAVE_KEY, JSON.stringify(engine.serialize()));
-    localStorage.setItem(PREF_KEY, JSON.stringify(preferences));
-    $('#save-status').textContent = '자동 저장됨';
-    storageAvailable = true;
-  } catch {
-    $('#save-status').textContent = '저장 공간 부족 · 이번 세션만 유지';
-    storageAvailable = false;
-  }
+function save(immediate = true) {
+  accountSession.save(engine.serialize(), preferences, { immediate: typeof immediate === 'boolean' ? immediate : true });
   lastSave = Date.now();
 }
 
@@ -194,7 +185,7 @@ function updateOrder() {
   $('#order-liquidation').textContent = `${direction==='high'?'−':'+'}${(100/leverage).toFixed(2)}% ${direction==='high'?'하락':'상승'}`;
   const overBalance = validAmount && amount+fee>engine.state.cash+1e-7;
   $('#order-error').textContent = !validAmount?'최소 1원부터 투자할 수 있어요.':overBalance?'수수료를 포함한 잔액이 부족해요. 최대 버튼을 눌러보세요.':'';
-  $('#place-order').disabled = !validAmount||overBalance||engine.state.status!=='playing';
+  $('#place-order').disabled = !accountSession.canPlay||!validAmount||overBalance||engine.state.status!=='playing';
   $('#leverage-value').innerHTML = `${leverage}<span>×</span>`;
   $('#leverage').style.setProperty('--range-progress',`${(leverage-1)/99*100}%`);
   for (const button of $$('[data-leverage]')) button.classList.toggle('active',Number(button.dataset.leverage)===leverage);
@@ -312,11 +303,13 @@ function render(){
 }
 
 function action(callback){
+  if(!accountSession.canPlay)return;
   try{callback();processEvents(engine.tick(Date.now()));render();save();}
   catch(error){toast(error.message||'처리하지 못했습니다. 다시 시도해 주세요.','error');render();save();}
 }
 
 function resetGame(){
+  if(!accountSession.canPlay)return;
   $$('dialog[open]').forEach(dialog=>dialog.close());
   engine=new TradingEngine();engine.volatilityMultiplier=preferences.volatility;
   lastStatus=null;gameoverTime=null;portfolioSignature='';
@@ -369,12 +362,31 @@ $('#restart-game').addEventListener('click',resetGame);
 $('#nav-portfolio').addEventListener('click',()=>{if(!window.matchMedia('(min-width: 901px)').matches)$('#portfolio-panel').scrollIntoView({behavior:'smooth',block:'center'});else $('.portfolio-tabs .active').focus({preventScroll:true});$('#nav-portfolio').classList.add('active');$('#nav-trade').classList.remove('active');});
 $('#nav-trade').addEventListener('click',()=>{if(!window.matchMedia('(min-width: 901px)').matches)$('#chart-panel').scrollIntoView({behavior:'smooth',block:'center'});else $('.intervals .active').focus({preventScroll:true});$('#nav-trade').classList.add('active');$('#nav-portfolio').classList.remove('active');});
 document.addEventListener('keydown',event=>{if(event.key==='Escape')$('#chart-panel').classList.remove('expanded');if(event.key==='/'&&!['INPUT','SELECT','TEXTAREA'].includes(document.activeElement.tagName)&&!$('dialog[open]')&&engine.state.status==='playing'){event.preventDefault();$('#stock-search').focus();}});
-window.addEventListener('pagehide',save);
-document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{processEvents(engine.tick(Date.now()));render();save();}});
+window.addEventListener('pagehide',()=>{save(false);void accountSession.flush();});
+document.addEventListener('visibilitychange',()=>{if(!accountSession.canPlay)return;if(document.hidden){save(false);void accountSession.flush();}else{processEvents(engine.tick(Date.now()));render();save(false);}});
 
 refreshStockList();
 processEvents(engine.tick(Date.now()));
 render();
-if(engine.restoreWarning)toast(engine.restoreWarning,'error');
-if(!storageAvailable)toast('브라우저 저장소를 사용할 수 없어 현재 세션에서만 유지됩니다.','error');
-setInterval(()=>{processEvents(engine.tick(Date.now()));render();if(Date.now()-lastSave>=5000)save();},1000);
+bindAccountGame({
+  snapshot:()=>({game:engine.serialize(),preferences}),
+  restore(payload){
+    if(!payload?.game)throw new Error('계정 기록이 없습니다.');
+    const restored=new TradingEngine({saved:payload.game});
+    if(restored.restoreWarning)throw new Error('저장 기록을 확인할 수 없습니다.');
+    engine=restored;preferences=readPreferences(payload.preferences);selected=preferences.selected;
+    engine.volatilityMultiplier=preferences.volatility;
+    lastStatus=null;gameoverTime=null;portfolioSignature='';
+    $$('[data-interval]').forEach(button=>button.classList.toggle('active',Number(button.dataset.interval)===preferences.interval));
+    $('#chart-type').innerHTML=icon(preferences.chartType==='candles'?'candle':'chart');
+    $('#chart-type').setAttribute('aria-label',preferences.chartType==='candles'?'선 차트로 전환':'캔들 차트로 전환');
+    $('#ma-toggle').classList.toggle('active',preferences.showMA);
+    $('#ma-toggle').setAttribute('aria-pressed',String(preferences.showMA));
+    $('#volatility-setting').value=String(preferences.volatility);
+    $('#volume-setting').checked=preferences.showVolume;$('#sound-setting').checked=preferences.sound;
+    chart.resetView();refreshStockList();
+  },
+  resume(){processEvents(engine.tick(Date.now()));render();save();},
+});
+render();
+setInterval(()=>{if(!accountSession.canPlay)return;processEvents(engine.tick(Date.now()));render();if(Date.now()-lastSave>=5000)save(false);},1000);
