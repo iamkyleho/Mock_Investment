@@ -1,0 +1,10 @@
+node_modules/
+artifacts/
+*.log
+*.zip
+.DS_Store
+.env
+.env.*
+!.env.example
+Thumbs.db
+coverage/
