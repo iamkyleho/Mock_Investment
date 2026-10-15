@@ -1,7 +1,7 @@
 import { AUTH_CONFIG } from './auth-config.js';
 import { CloudSaveStore } from './cloud-save.js';
 import { LEGACY_GAME_KEY, LEGACY_PREF_KEY, normalizeUsername, accountEmail,
-  validatePassword, validateAuthConfig, makeAccountPayload, authErrorMessage } from './account-utils.js';
+  loginEmail, validatePassword, validateAuthConfig, makeAccountPayload, authErrorMessage } from './account-utils.js?v=20261015-admin1';
 
 const $ = selector => document.querySelector(selector);
 let client;
@@ -61,6 +61,13 @@ function setMode(nextMode) {
   $('#auth-confirm').required = signup;
   $('#auth-confirm').value = '';
   $('#auth-password').autocomplete = signup ? 'new-password' : 'current-password';
+  $('#auth-username-label').textContent = signup ? '아이디' : '아이디 또는 관리자 이메일';
+  $('#auth-username').maxLength = signup ? 20 : 254;
+  $('#auth-username').placeholder = signup ? '나만의 아이디' : '아이디 또는 관리자 이메일';
+  $('#auth-username').title = signup ? '영문, 숫자, 밑줄(_)을 사용해 3~20자로 입력하세요.' : '가입한 아이디 또는 관리자 이메일을 입력하세요.';
+  if (signup) $('#auth-username').pattern = '[A-Za-z0-9_]{3,20}';
+  else $('#auth-username').removeAttribute('pattern');
+  $('#auth-username-hint').textContent = signup ? '영문, 숫자, 밑줄(_) · 3–20자' : '일반 회원은 아이디, 관리자는 지정된 계정으로 로그인하세요.';
   $('#auth-submit').textContent = signup ? '계정 만들고 시작하기 →' : '로그인하고 이어 하기 →';
   setFeedback('');
 }
@@ -140,14 +147,26 @@ async function chooseExistingSave() {
 
 async function openPlayer(user) {
   if (booted) return;
-  if (!user?.id || !user.email?.endsWith('@players.mock.invalid')) {
+  if (!user?.id || typeof user.email !== 'string') {
     throw new Error('INVALID_ACCOUNT');
   }
-  const username = normalizeUsername(user.email.split('@')[0]);
   setBusy(true);
-  setFeedback('저장된 투자 기록을 불러오고 있습니다.');
+  setFeedback('계정 권한과 저장된 기록을 확인하고 있습니다.');
   accountSession.user = user;
-  accountSession.username = username;
+  // The server owns administrator membership. A name or editable user metadata
+  // must never grant access to other players' records.
+  const role = await client.rpc('is_game_admin');
+  if (role.error || typeof role.data !== 'boolean') throw new Error('ACCOUNT_ROLE_UNAVAILABLE');
+  if (sessionClosed || accountSession.user?.id !== user.id) throw new Error('SESSION_CHANGED');
+  if (role.data) {
+    booted = true;
+    $('#auth-password').value = '';
+    $('#auth-confirm').value = '';
+    location.replace('./admin.html');
+    return;
+  }
+  if (!user.email.endsWith('@players.mock.invalid')) throw new Error('INVALID_ACCOUNT');
+  accountSession.username = normalizeUsername(user.email.split('@')[0]);
   store?.dispose();
   store = new CloudSaveStore({ client, userId: user.id, storage,
     onStatus: updateSaveStatus, delayMs: 30_000 });
@@ -176,9 +195,12 @@ async function finishPlayer(payload, userId) {
 async function submitAccount(event) {
   event.preventDefault();
   if (busy || !client) return;
-  let username, password;
+  let username, email, password;
   try {
-    username = normalizeUsername($('#auth-username').value);
+    if (mode === 'signup') {
+      username = normalizeUsername($('#auth-username').value);
+      email = accountEmail(username);
+    } else email = loginEmail($('#auth-username').value);
     password = validatePassword($('#auth-password').value);
     if (mode === 'signup' && password !== $('#auth-confirm').value) {
       throw new Error('비밀번호가 일치하지 않습니다. 다시 확인해 주세요.');
@@ -187,7 +209,7 @@ async function submitAccount(event) {
   setBusy(true);
   setFeedback(mode === 'signup' ? '계정을 만드는 중입니다…' : '로그인 중입니다…');
   try {
-    const credentials = { email: accountEmail(username), password };
+    const credentials = { email, password };
     const result = mode === 'signup'
       ? await client.auth.signUp({ ...credentials, options: { data: { username } } })
       : await client.auth.signInWithPassword(credentials);

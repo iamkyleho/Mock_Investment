@@ -8,7 +8,7 @@ GitHub Pages는 게임 화면을 제공하고, Supabase는 아이디·비밀번�
 
 [Supabase 대시보드](https://supabase.com/dashboard)에서 Free 조직의 새 프로젝트를 만들거나 기존 무료 프로젝트를 선택합니다. 프로젝트 생성 시 설정하는 데이터베이스 비밀번호는 사이트 코드에 입력하지 않습니다.
 
-SQL Editor에서 [`supabase/migrations/001_account_saves.sql`](../supabase/migrations/001_account_saves.sql) 전체를 실행합니다. `game_saves` 테이블과 `save_game` 함수, 계정별 읽기 정책이 생성됩니다.
+SQL Editor에서 [`supabase/migrations/001_account_saves.sql`](../supabase/migrations/001_account_saves.sql), [`supabase/migrations/002_admin_dashboard.sql`](../supabase/migrations/002_admin_dashboard.sql)을 순서대로 실행합니다. 계정 저장과 읽기 정책, 로그인할 때 확인할 관리자 권한 함수가 생성됩니다. 웹사이트를 배포하기 전에 두 SQL이 모두 성공해야 합니다.
 
 ## 2. 아이디·비밀번호 인증 설정
 
@@ -66,3 +66,19 @@ await supabase.rpc('save_game', {
 ```
 
 응답 행은 `payload`, `revision`, `updated_at`을 포함합니다. 최초 저장은 버전 1이고 성공할 때마다 1씩 증가합니다. 충돌은 오류 코드 `P0001`, 메시지 `SAVE_CONFLICT`를 반환하며 저장된 내용을 변경하지 않습니다. JSON 저장 자료는 최대 2 MiB이고 버전 및 기본 구조를 검사합니다. 이는 가상 자금 게임의 저장 기능이며 서버가 모든 거래 결과를 검증하는 경쟁용 순위 시스템은 아닙니다.
+
+## 관리자 계정 설정
+
+1. 프로젝트 소유자로 SQL Editor에서 `supabase/migrations/002_admin_dashboard.sql`을 실행합니다. 이 단계만으로 관리자 계정이 생기지는 않습니다.
+2. 소유자가 Authentication → Users에서 본인 이메일로 계정을 직접 만들고 본인만 아는 8자 이상의 비밀번호를 설정합니다. 기존 계정을 사용한다면 본인 계정인지 먼저 확인합니다. 관리자 로그인에는 이 이메일을 그대로 입력합니다. 일반 회원의 가입 방식은 기존 아이디 방식으로 유지됩니다.
+3. Authentication → Users에서 방금 만든 계정의 UUID를 확인한 뒤, 아래 자리표시자를 그 값으로 바꾸어 소유자 SQL Editor에서 실행합니다. 다른 회원에게 관리자 권한을 주지 않도록 계정을 정확히 확인합니다.
+
+```sql
+insert into game_private.admin_users (user_id)
+values ('REPLACE_WITH_VERIFIED_OWNER_USER_UUID'::uuid)
+on conflict (user_id) do nothing;
+```
+
+로그인 화면에서 지정된 계정으로 로그인하면 관리자 페이지로 이동합니다. 일반 계정은 기존 게임으로 이동하며 관리자 API의 호출도 거부됩니다. 권한은 `game_private.admin_users`에 저장되고, 사용자 이름이나 사용자가 바꿀 수 있는 프로필 정보로 부여하지 않습니다.
+
+관리자 화면은 가입자 조회 전용입니다. 일반 사용자는 자기 게임 저장만 읽고 쓸 수 있으며 관리자 API는 비밀번호, 비밀번호 해시, 실제 이메일, 전체 게임 원본을 응답하지 않습니다. 화면의 손익은 저장된 시세로 계산한 **현재 게임**의 값입니다. 순자산은 현금과 보유 포지션 가치에서 대출을 뺀 값이고, 누적 손익은 순자산에서 시작 자금 10만 원을 뺍니다. 차트는 서버에서 진행시키지 않으며, 대출 만기 처리는 플레이어가 다음에 접속하여 저장할 때 반영됩니다.

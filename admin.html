@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0b0e15" />
+  <meta name="robots" content="noindex, nofollow" />
+  <meta name="description" content="MOCK EXCHANGE 관리자 회원 및 모의투자 현황" />
+  <title>MOCK — 관리자</title>
+  <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+  <link rel="stylesheet" href="./admin.css?v=20261015-1" />
+</head>
+<body>
+  <svg class="svg-defs" xmlns="http://www.w3.org/2000/svg"><defs>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6Z"/><path d="m8 12 3 3 5-6"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4.5 4.5"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M3 10a9 9 0 1 1 2 8M3 4v6h6"/></symbol>
+    <symbol id="i-users" viewBox="0 0 24 24"><circle cx="9" cy="7" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3M16 4a3 3 0 0 1 0 6m2 4a5 5 0 0 1 3 4v3"/></symbol>
+    <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M20 8H5a2 2 0 0 1 0-4h13v4M4 6v13h17V8M21 12h-6v4h6M17 14h.01"/></symbol>
+    <symbol id="i-up" viewBox="0 0 24 24"><path d="m5 17 14-14M8 3h11v11"/></symbol>
+    <symbol id="i-down" viewBox="0 0 24 24"><path d="m5 7 14 14M8 21h11V10"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 6v6l4 2"/></symbol>
+    <symbol id="i-logout" viewBox="0 0 24 24"><path d="M10 4H4v16h6m-1-8h12m-4-4 4 4-4 4"/></symbol>
+  </defs></svg>
+
+  <header class="admin-header">
+    <a class="brand" href="./" aria-label="MOCK 홈"><span class="brand-mark"><svg viewBox="0 0 32 32"><path d="M4 23V9l12 9L28 9v14M4 9l12 9L28 9"/></svg></span><span>MOCK<small>EXCHANGE</small></span></a>
+    <span class="admin-badge"><svg><use href="#i-shield"/></svg>ADMIN CONSOLE</span>
+    <div id="admin-identity" class="admin-identity" hidden><span class="admin-avatar" aria-hidden="true">A</span><span><b id="admin-username">관리자</b><small>관리자 계정</small></span><button id="admin-logout" class="logout-button" type="button" aria-label="로그아웃"><svg><use href="#i-logout"/></svg><span>로그아웃</span></button></div>
+  </header>
+
+  <section id="admin-gate" class="admin-gate" role="status" aria-live="polite">
+    <span class="gate-icon"><svg><use href="#i-shield"/></svg></span>
+    <span id="admin-spinner" class="spinner" aria-hidden="true"></span>
+    <h1 id="admin-gate-title">관리자 권한 확인 중</h1>
+    <p id="admin-gate-description">안전하게 회원 기록을 불러오고 있어요.</p>
+    <div class="gate-actions"><a id="admin-gate-back" class="primary-button" href="./" hidden>로그인 화면으로</a><button id="admin-gate-retry" class="quiet-button" type="button" hidden>다시 시도</button></div>
+  </section>
+
+  <main id="admin-dashboard" class="admin-main" hidden>
+    <section class="page-heading" aria-labelledby="page-title">
+      <div><span class="eyebrow">MOCK / ACCOUNT OVERVIEW</span><h1 id="page-title">플레이어 현황<span>.</span></h1><p>가입한 계정부터 투자 성적까지, 한눈에 확인하세요.</p></div>
+      <div class="heading-actions"><span class="snapshot-badge"><i></i> 마지막 저장 기록 기준</span><button id="admin-refresh" class="refresh-button" type="button"><svg><use href="#i-refresh"/></svg>새로고침</button></div>
+    </section>
+
+    <div id="admin-feedback" class="feedback" role="status" aria-live="polite" hidden></div>
+
+    <section class="metric-grid" aria-label="회원 통계">
+      <article class="metric-card"><div class="metric-title"><span>회원 수</span><svg><use href="#i-users"/></svg></div><strong id="metric-members">—</strong><span id="metric-members-note" class="metric-note">조회된 계정</span></article>
+      <article class="metric-card"><div class="metric-title"><span>합산 순자산</span><svg><use href="#i-wallet"/></svg></div><strong id="metric-equity">—</strong><span class="metric-note">평가자산에서 대출을 뺀 금액</span></article>
+      <article class="metric-card profit-card"><div class="metric-title"><span>수익 계정의 총 이익</span><svg><use href="#i-up"/></svg></div><strong id="metric-profit">—</strong><span id="metric-profit-note" class="metric-note">초기 자금 대비 플러스 계정</span></article>
+      <article class="metric-card loss-card"><div class="metric-title"><span>손실 계정의 총 손실</span><svg><use href="#i-down"/></svg></div><strong id="metric-loss">—</strong><span id="metric-loss-note" class="metric-note">초기 자금 대비 마이너스 계정</span></article>
+    </section>
+
+    <section class="players-panel" aria-labelledby="players-title">
+      <div class="players-toolbar"><div class="players-title"><h2 id="players-title">가입 계정</h2><span id="players-count" class="count-badge">0</span></div><form id="admin-search-form" class="admin-search" role="search"><label for="admin-search" class="sr-only">아이디 검색</label><svg aria-hidden="true"><use href="#i-search"/></svg><input id="admin-search" type="search" maxlength="64" placeholder="아이디 검색" autocomplete="off" spellcheck="false"/><button type="submit">검색</button></form></div>
+      <div class="table-caption"><span id="admin-filter-label">전체 회원 · 최신 가입순</span><span>모든 금액은 가상 자금 · KRW</span></div>
+      <div id="players-table-wrap" class="table-wrap" tabindex="0" role="region" aria-label="회원별 투자 성적. 화면이 좁으면 좌우로 스크롤하세요.">
+        <table><thead><tr><th scope="col">아이디 / 가입일</th><th scope="col">게임 상태</th><th scope="col" class="numeric">순자산</th><th scope="col" class="numeric emphasis">현재 게임 누적 손익<span>초기 10만 원 대비</span></th><th scope="col" class="numeric">실현 손익</th><th scope="col" class="numeric">미실현 손익</th><th scope="col" class="numeric">대출</th><th scope="col">마지막 저장</th></tr></thead><tbody id="players-body"></tbody></table>
+      </div>
+      <div id="admin-empty" class="empty-state" hidden><svg><use href="#i-users"/></svg><h3>표시할 계정이 없어요</h3><p>새 회원이 가입하면 이곳에서 확인할 수 있어요.</p></div>
+      <div id="admin-table-loading" class="table-loading" hidden><span class="spinner"></span><span>회원 기록을 불러오고 있어요</span></div>
+      <footer class="pagination"><span id="admin-page-range">0개 계정</span><div class="page-controls"><button id="admin-page-prev" type="button" aria-label="이전 페이지" disabled>←</button><span id="admin-page-label">1 / 1</span><button id="admin-page-next" type="button" aria-label="다음 페이지" disabled>→</button></div></footer>
+    </section>
+
+    <aside class="data-note"><span class="note-icon"><svg><use href="#i-clock"/></svg></span><div><strong>저장된 시점의 성적이에요.</strong><p>총 손익은 순자산 − 시작 자금 100,000원입니다. 실현·미실현 손익에는 거래 수수료가 반영됩니다. 플레이어가 새 게임을 시작하면 성적도 새로 집계됩니다. 아직 저장되지 않은 변동은 새로고침 후에도 바로 보이지 않을 수 있어요.</p></div></aside>
+    <footer class="admin-footer"><span>MOCK EXCHANGE <span class="footer-divider">/</span> ADMIN</span><span id="admin-updated-at">데이터 확인 중</span><span>SIMULATION ONLY</span></footer>
+  </main>
+  <script type="module" src="./src/admin.js?v=20261015-1"></script>
+</body>
+</html>

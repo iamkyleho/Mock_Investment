@@ -1,7 +1,7 @@
 import { TradingEngine, estimateFee, maxAffordableAmount, INITIAL_CASH, MIN_MARGIN } from './engine.js';
 import { STOCKS, STOCK_BY_ID } from './stocks.js';
 import { MarketChart } from './chart.js';
-import { accountSession, bindAccountGame } from './auth.js';
+import { accountSession, bindAccountGame } from './auth.js?v=20261015-admin1';
 
 const $ = selector => document.querySelector(selector);
 const $$ = selector => [...document.querySelectorAll(selector)];

@@ -9,7 +9,7 @@
   },
   "scripts": {
     "start": "node scripts/serve.mjs",
-    "check": "node --check src/main.js && node --check src/auth.js && node --check src/auth-config.js && node --check src/account-utils.js && node --check src/cloud-save.js && node --check src/app.js && node --check src/engine.js && node --check src/stocks.js && node --check src/chart.js && node --check scripts/serve.mjs && node --check scripts/build-vendor.mjs",
+    "check": "node --check src/main.js && node --check src/auth.js && node --check src/admin.js && node --check src/auth-config.js && node --check src/account-utils.js && node --check src/cloud-save.js && node --check src/app.js && node --check src/engine.js && node --check src/stocks.js && node --check src/chart.js && node --check scripts/serve.mjs && node --check scripts/build-vendor.mjs && node --check scripts/test-admin-schema.mjs",
     "build:vendor": "node scripts/build-vendor.mjs",
     "test": "node --test"
   },
@@ -17,6 +17,7 @@
     "@supabase/supabase-js": "2.117.3"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "0.5.10",
     "esbuild": "0.28.2"
   }
 }

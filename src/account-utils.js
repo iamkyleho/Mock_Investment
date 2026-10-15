@@ -14,6 +14,17 @@ export function accountEmail(username) {
   return `${normalizeUsername(username)}@players.mock.invalid`;
 }
 
+// Administrators may use an owner-provisioned email account. This only selects
+// the authentication identifier; administrator access is checked on the server.
+export function loginEmail(value) {
+  const identifier = String(value).trim().toLowerCase();
+  if (!identifier.includes('@')) return accountEmail(identifier);
+  if (identifier.length > 254 || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(identifier)) {
+    throw new Error('아이디 또는 이메일 주소를 확인해 주세요.');
+  }
+  return identifier;
+}
+
 export function validatePassword(password) {
   if (typeof password !== 'string' || password.length < 8 || password.length > 128) {
     throw new Error('비밀번호는 8~128자로 입력해 주세요.');

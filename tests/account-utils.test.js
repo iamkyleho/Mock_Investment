@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { normalizeUsername, accountEmail, validatePassword, validateAuthConfig, makeAccountPayload } from '../src/account-utils.js';
+import { normalizeUsername, accountEmail, loginEmail, validatePassword, validateAuthConfig, makeAccountPayload } from '../src/account-utils.js';
 import { TradingEngine } from '../src/engine.js';
 
 test('IDs are case insensitive and cannot change the internal authentication domain', () => {
@@ -16,6 +16,16 @@ test('password validation does not trim, normalize or silently truncate secrets'
   assert.throws(() => validatePassword('1234567'));
   assert.throws(() => validatePassword('a'.repeat(129)));
   assert.equal(validatePassword('a'.repeat(128)).length, 128);
+});
+
+test('email login supports owner accounts without permitting email-based public signup IDs', () => {
+  assert.equal(loginEmail(' Kyle_01 '), 'kyle_01@players.mock.invalid');
+  assert.equal(loginEmail(' Owner@Example.COM '), 'owner@example.com');
+  assert.equal(loginEmail('admin'), 'admin@players.mock.invalid');
+  for (const value of ['a@@example.com', 'a b@example.com', 'a@example', 'a'.repeat(250) + '@x.com']) {
+    assert.throws(() => loginEmail(value));
+  }
+  assert.throws(() => accountEmail('owner@example.com'));
 });
 
 test('browser auth settings require HTTPS and a publishable key', () => {
