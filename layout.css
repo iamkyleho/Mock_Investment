@@ -1,0 +1,226 @@
+/* Wrappers are layout-neutral on the existing tablet and mobile layouts. */
+.order-content,
+.order-actions,
+.order-account {
+  display: contents;
+}
+
+.stock-list,
+.positions-wrapper {
+  overscroll-behavior: contain;
+}
+
+/* Desktop terminal: the window owns the frame, each panel owns its scrolling. */
+@media (min-width: 901px) {
+  html {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  .app-header,
+  .market-strip,
+  .debt-banner,
+  .status-bar {
+    flex: none;
+  }
+
+  .app-header { height: 64px; }
+  .market-strip { height: 36px; }
+  .status-bar { min-height: 27px; padding-block: 6px; }
+
+  .workspace {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .watchlist {
+    position: static;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .watchlist > :not(.stock-list) { flex-shrink: 0; }
+  .watchlist .panel-title { height: 50px; }
+  .watchlist .market-tabs { margin-block: 12px 10px; }
+  .stock-list { min-height: 0; overflow-y: auto; }
+  .watchlist-bottom { height: 34px; }
+
+  .trading-center {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) clamp(120px, 20vh, 210px) auto;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .instrument-header {
+    min-height: 76px;
+    padding-block: 14px;
+  }
+
+  .chart-panel:not(.expanded) {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .chart-toolbar { height: 43px; flex: none; }
+  .chart-container { flex: 1; height: auto; min-height: 0; }
+  .chart-container canvas { position: absolute; inset: 0; }
+  .chart-bottom { height: 26px; flex: none; }
+
+  .portfolio {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .portfolio-toolbar { flex: none; height: 40px; }
+  #portfolio-content {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: #2a3142 transparent;
+  }
+  .positions-wrapper { max-height: none; overflow: visible; }
+  .positions-table thead { position: sticky; top: 0; background: var(--panel); z-index: 1; }
+  .portfolio-empty { min-height: 0; height: 100%; padding: 16px; }
+  .overview-grid { padding-block: 20px; }
+  .market-insight { min-height: 34px; padding-block: 8px; }
+
+  .order-panel {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    padding-block: 0;
+    overflow: hidden;
+  }
+
+  .order-content {
+    display: block;
+    flex: 1;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: #343047 transparent;
+    padding-bottom: 8px;
+  }
+
+  .order-panel-title { height: 48px; }
+  .direction-tabs button { padding-block: 8px; }
+  .order-description { min-height: 18px; margin-top: 8px; }
+  .balance-row { padding-top: 12px; margin-block: 6px 14px; }
+  .field-label { margin-bottom: 7px; }
+  .amount-field { padding-block: 10px; }
+  .amount-field input { font-size: 21px; }
+  .amount-presets { margin-top: 6px; }
+  .leverage-label { margin-top: 18px; }
+  .leverage-range { margin-block: 15px 11px; }
+  .leverage-hint { margin-top: 9px; padding-block: 8px; }
+  .order-summary { margin-top: 15px; padding-top: 13px; gap: 10px; }
+
+  .order-actions {
+    display: block;
+    flex: none;
+    border-top: 1px solid var(--line);
+    padding-block: 10px 12px;
+    background: var(--panel);
+    z-index: 1;
+  }
+
+  .order-error { min-height: 0; padding: 0 0 8px; }
+  .order-error:empty { display: none; }
+  .place-order { height: 44px; }
+  .order-footnote { margin-top: 7px; }
+
+  /* The compact account fits above the pinned order button. */
+  .order-account {
+    display: block;
+    flex: none;
+    order: -1;
+  }
+  .order-content { order: -2; }
+  .account-card { margin: 6px 0 10px; padding: 10px 12px; }
+  .account-card-title { display: none; }
+  .account-equity { margin: 0; flex-direction: row; align-items: center; justify-content: space-between; }
+  .account-equity strong { font-size: 18px; margin: 0; }
+  .account-detail { margin-top: 7px; }
+  .account-progress,
+  .account-start,
+  .risk-caption { display: none; }
+
+  .chart-panel.expanded .chart-container { min-height: 0; }
+}
+
+@media (min-width: 901px) and (max-height: 900px) {
+  .app-header { height: 56px; }
+  .market-strip { height: 32px; }
+  .instrument-header { min-height: 66px; padding-block: 10px; }
+  .instrument-price > strong { font-size: 27px; }
+  .trading-center { grid-template-rows: auto minmax(0, 1fr) 130px auto; }
+  .market-insight { min-height: 28px; padding-block: 5px; }
+  .order-panel-title { height: 40px; }
+  .direction-tabs button { padding-block: 7px; }
+  .order-description { margin-top: 6px; min-height: 15px; }
+  .balance-row { padding-top: 9px; margin-block: 4px 10px; }
+  .amount-field { padding-block: 8px; }
+  .amount-presets button { padding-block: 5px; }
+  .leverage-label { margin-top: 12px; }
+  .leverage-range { margin-block: 12px 8px; }
+  .leverage-hint { padding-block: 6px; margin-top: 7px; }
+  .order-summary { margin-top: 11px; padding-top: 9px; gap: 8px; }
+  .account-card { margin-block: 4px 8px; padding-block: 8px; }
+  .account-detail { display: inline-flex; width: 100%; margin-top: 5px; }
+  .account-detail:first-of-type { margin-top: 0; }
+  .order-actions { padding-block: 8px; }
+  .order-footnote { font-size: 7px; }
+}
+
+@media (min-width: 901px) and (max-height: 800px) {
+  .account-detail { display: none; }
+}
+
+@media (min-width: 901px) and (max-height: 740px) {
+  .order-description { display: none; }
+}
+
+@media (min-width: 901px) and (max-height: 680px) {
+  .order-account { display: none; }
+  .order-description { display: none; }
+  .leverage-hint { display: none; }
+  .watchlist .panel-title { height: 42px; }
+  .instrument-header { min-height: 58px; padding-block: 8px; }
+  .trading-center { grid-template-rows: auto minmax(0, 1fr) 104px auto; }
+  .portfolio-toolbar { height: 34px; }
+}
+
+/* Tablets retain their two-column layout, but only the stock list scrolls. */
+@media (min-width: 651px) and (max-width: 900px) {
+  .watchlist {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
+    max-height: none;
+    overflow: hidden;
+    align-self: start;
+  }
+  .watchlist > :not(.stock-list) { flex-shrink: 0; }
+  .stock-list { min-height: 0; }
+}

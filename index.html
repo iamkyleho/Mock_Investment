@@ -8,6 +8,7 @@
   <title>MOCK — 나만의 트레이딩 터미널</title>
   <link rel="icon" type="image/svg+xml" href="./favicon.svg" />
   <link rel="stylesheet" href="./styles.css" />
+  <link rel="stylesheet" href="./layout.css" />
 </head>
 <body>
   <svg class="svg-defs" xmlns="http://www.w3.org/2000/svg"><defs>
@@ -62,14 +63,15 @@
       <div class="market-insight"><span class="insight-icon"><svg><use href="#i-bolt"/></svg></span><span class="insight-label">MARKET PULSE</span><span id="market-news">시장은 열려 있습니다. 당신의 첫 번째 움직임을 기다립니다.</span><span class="insight-tag">SIMULATED</span></div>
     </section>
 
-    <aside class="order-panel panel"><div class="order-panel-title"><h2>주문하기</h2><span class="small-badge">시장가</span></div><div class="direction-tabs"><button data-direction="high" class="active high"><svg><use href="#i-arrow"/></svg>HIGH <span>상승</span></button><button data-direction="low" class="low"><svg><use href="#i-down"/></svg>LOW <span>하락</span></button></div><div class="order-description" id="direction-description">가격이 오를수록 수익이 발생해요.</div>
+    <aside class="order-panel panel"><div class="order-content"><div class="order-panel-title"><h2>주문하기</h2><span class="small-badge">시장가</span></div><div class="direction-tabs"><button data-direction="high" class="active high"><svg><use href="#i-arrow"/></svg>HIGH <span>상승</span></button><button data-direction="low" class="low"><svg><use href="#i-down"/></svg>LOW <span>하락</span></button></div><div class="order-description" id="direction-description">가격이 오를수록 수익이 발생해요.</div>
       <div class="balance-row"><span>주문 가능 금액</span><b id="available-cash">₩100,000</b></div>
       <label class="field-label" for="order-amount">투자 금액 <span>증거금</span></label><div class="amount-field"><span>₩</span><input id="order-amount" type="number" min="1000" step="1000" value="10000" inputmode="numeric"/><span>KRW</span></div><div class="amount-presets"><button data-amount="10000">1만</button><button data-amount="30000">3만</button><button data-percent="0.5">50%</button><button data-percent="1">최대</button></div>
       <div class="leverage-label"><label for="leverage">레버리지</label><strong id="leverage-value">1<span>×</span></strong></div><input id="leverage" class="leverage-range" type="range" min="1" max="100" step="1" value="1"/><div class="leverage-presets"><button data-leverage="1" class="active">1×</button><button data-leverage="5">5×</button><button data-leverage="10">10×</button><button data-leverage="20">20×</button><button data-leverage="50">50×</button><button data-leverage="100">100×</button></div><div class="leverage-hint" id="leverage-hint"><svg><use href="#i-shield"/></svg><span>내 속도로, 차분하게 시작하세요.</span></div>
       <div class="order-summary"><div><span>선택 종목</span><b id="order-stock"></b></div><div><span>실제 포지션 규모</span><b id="order-notional">₩10,000</b></div><div><span>예상 진입가</span><b id="order-entry"></b></div><div><span>거래 수수료 <i title="포지션 규모의 0.05%. 진입할 때 한 번 차감됩니다.">ⓘ</i></span><b id="order-fee">₩5</b></div><div><span>강제 청산 기준</span><b id="order-liquidation">−100.00%</b></div></div>
-      <p id="order-error" class="order-error" aria-live="polite"></p><button id="place-order" class="place-order high"><svg><use href="#i-arrow"/></svg><span>HIGH 포지션 열기</span><span class="order-button-arrow">↗</span></button><div class="order-footnote"><svg><use href="#i-shield"/></svg>가상 자금으로 거래하는 모의투자입니다</div>
+      </div><div class="order-actions"><p id="order-error" class="order-error" aria-live="polite"></p><button id="place-order" class="place-order high"><svg><use href="#i-arrow"/></svg><span>HIGH 포지션 열기</span><span class="order-button-arrow">↗</span></button><div class="order-footnote"><svg><use href="#i-shield"/></svg>가상 자금으로 거래하는 모의투자입니다</div></div><div class="order-account">
       <section class="account-card"><div class="account-card-title"><svg><use href="#i-wallet"/></svg><span>MY ACCOUNT</span><span class="account-currency">KRW</span></div><div class="account-equity"><span>순자산</span><strong id="account-net">₩100,000</strong></div><div class="account-detail"><span>평가 손익</span><b id="account-pnl">₩0</b></div><div class="account-detail"><span>사용 중인 증거금</span><b id="account-margin">₩0</b></div><div class="account-detail"><span>대출 잔액</span><b id="account-debt">₩0</b></div><div class="account-progress"><i id="account-progress-bar"></i></div><div class="account-start">₩100,000에서 시작한 당신의 이야기</div></section>
       <div class="risk-caption">작은 시드, 무한한 가능성.<br/><span>수익도 손실도, 모두 당신의 선택.</span></div>
+      </div>
     </aside>
   </main>
 

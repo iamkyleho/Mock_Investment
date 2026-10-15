@@ -366,8 +366,8 @@ $('#sound-setting').addEventListener('change',()=>{preferences.sound=$('#sound-s
 $('#reset-request').addEventListener('click',()=>{$('#settings-dialog').close();$('#reset-dialog').showModal();});
 $('#confirm-reset').addEventListener('click',resetGame);
 $('#restart-game').addEventListener('click',resetGame);
-$('#nav-portfolio').addEventListener('click',()=>{$('#portfolio-panel').scrollIntoView({behavior:'smooth',block:'center'});$('#nav-portfolio').classList.add('active');$('#nav-trade').classList.remove('active');});
-$('#nav-trade').addEventListener('click',()=>{$('#chart-panel').scrollIntoView({behavior:'smooth',block:'center'});$('#nav-trade').classList.add('active');$('#nav-portfolio').classList.remove('active');});
+$('#nav-portfolio').addEventListener('click',()=>{if(!window.matchMedia('(min-width: 901px)').matches)$('#portfolio-panel').scrollIntoView({behavior:'smooth',block:'center'});else $('.portfolio-tabs .active').focus({preventScroll:true});$('#nav-portfolio').classList.add('active');$('#nav-trade').classList.remove('active');});
+$('#nav-trade').addEventListener('click',()=>{if(!window.matchMedia('(min-width: 901px)').matches)$('#chart-panel').scrollIntoView({behavior:'smooth',block:'center'});else $('.intervals .active').focus({preventScroll:true});$('#nav-trade').classList.add('active');$('#nav-portfolio').classList.remove('active');});
 document.addEventListener('keydown',event=>{if(event.key==='Escape')$('#chart-panel').classList.remove('expanded');if(event.key==='/'&&!['INPUT','SELECT','TEXTAREA'].includes(document.activeElement.tagName)&&!$('dialog[open]')&&engine.state.status==='playing'){event.preventDefault();$('#stock-search').focus();}});
 window.addEventListener('pagehide',save);
 document.addEventListener('visibilitychange',()=>{if(document.hidden)save();else{processEvents(engine.tick(Date.now()));render();save();}});
