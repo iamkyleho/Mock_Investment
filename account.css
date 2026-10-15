@@ -162,6 +162,8 @@ body:not(.auth-locked) .auth-screen { display: none; }
 .auth-spinner { width: 29px; height: 29px; border: 2px solid #302b45; border-top-color: #ae91f1; border-radius: 50%; animation: auth-spin .8s linear infinite; }
 @keyframes auth-spin { to { transform: rotate(360deg); } }
 
+/* Account actions must remain reachable when the mobile layout hides old avatars. */
+.header-actions #account-button { display: grid; flex: none; }
 #account-button > #avatar-initial { position: static; width: auto; height: auto; border: 0; background: none; border-radius: 0; }
 #account-button > i { position: absolute; right: -1px; bottom: 0; width: 8px; height: 8px; background: var(--green); border: 2px solid #0d1119; border-radius: 50%; }
 .account-dialog .modal-top { margin-bottom: 0; }
@@ -214,6 +216,13 @@ body:not(.auth-locked) .auth-screen { display: none; }
   .auth-tabs { margin-bottom: 23px; }
   .auth-page-foot { max-width: 490px; justify-content: center; font-size: 6px; }
   .auth-page-foot > span:not(:nth-child(2)) { display: none; }
+}
+
+@media (max-width: 650px) {
+  .app-header { gap: 8px; }
+  .header-actions { flex: none; }
+  .header-account { min-width: 0; }
+  .header-account strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 }
 
 @media (max-width: 380px) {
